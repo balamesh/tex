@@ -1,0 +1,45 @@
+\documentclass{llncs}
+
+\usepackage[T1]{fontenc} \usepackage[utf8]{inputenc} \usepackage[german]{babel}
+
+\usepackage{cite} %Vereinfachung der Referenzen: [1], [2], [3] => [1-3]
+\usepackage{makeidx}         % allows index generation
+
+\usepackage{graphicx} \usepackage[cmex10]{amsmath} %mathamatische Formeln %\usepackage{stfloat} %Bilder über zwei Spalten &\usepackage{url}
+\makeindex             % used for the subject index
+
+\begin{document} \title{ROS - Move Base}
+
+\author{Nicolas Limpert \and Christian Schnieder} \institute{Fachhochschule Aachen - University of Applied Sciences \and Robotik WS 2014 / 2015 }
+
+\maketitle
+\tableofcontents
+
+
+\begin{abstract} Das ROS-Package move\_base stellt  die Möglichkeit dar mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, dessen TODO \end{abstract}
+
+\section{Einleitung}
+Move Base ist ein ROS-Paket das dazu verwendet wird einem Roboter ein örtliches Ziel zu vermitteln und dieses Ziel in Kombination von mehreren ROS-Nodes (globalen- und lokalen Planer, globale und lokale costmap, etc.) zu versuchen, zu erreichen.\\
+Das Ziel wird der Move Base in Form einer Action vermittelt, mit der Idee aus einer ROS-Message nach Möglichkeit eine Reihe von Fahrbefehlen unter Berücksichtigung von Kollisionsvermeidung, optimaler Pfadplanung (in Abhängigkeit von lokalem und globalem Planner) ausuzführen.
+
+\section{Komponenten}
+Move\_base besteht aus folgenden Komponenten:
+\begin{description}
+\item[Globaler Planer]
+Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseGlobalPlanner erfüllt. Er ist für die Pfadplanung innerhalb der Karte zuständig, führt also beispielsweise eine A* - Suche durch, um von einem gegebenen Anfangspunkt den gewünschten Endpunkt zu erreichen.
+\item[Lokaler Planer]
+Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt. Aufgabe des lokalen Planers ist das Erreichen des nächsten Punkts den der globale Planer gegeben hat, bzw. das ausgeben von Fahrbefehlen zum erreichen dieses nächsten Punkts.
+\item[Globale Costmap]
+Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt
+\item[Lokale Costmap]
+Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt
+\end{description}
+
+\section{Verwandte Arbeiten/Stand der Technik}
+
+asiuhfhfsauhafds
+\section{Technischer Hintergrund} \section{Eigene Arbeit} \section{Evaluation} \section{Zusammenfassung/Ausblick}
+
+\bibliographystyle{IEEEtran} \bibliography{paper} %paper ist Literaturverzeichnis
+
+\end{document}
