@@ -1,4 +1,4 @@
-\documentclass{llncs}
+\documentclass[oribibl]{llncs}
 
 \usepackage[T1]{fontenc} \usepackage[utf8]{inputenc} \usepackage[german]{babel}
 
@@ -13,33 +13,107 @@
 \author{Nicolas Limpert \and Christian Schnieder} \institute{Fachhochschule Aachen - University of Applied Sciences \and Robotik WS 2014 / 2015 }
 
 \maketitle
-\tableofcontents
+%\tableofcontents
 
 
-\begin{abstract} Das ROS-Package move\_base stellt  die Möglichkeit dar mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, dessen TODO \end{abstract}
+\begin{abstract} Dieser Bericht stellt eine Zusammenfassung der verschiedenen Komponenten des in ROS implementierten Move\_Base-Pakets dar, das ROS-Package move\_base stellt  die Möglichkeit dar mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, dessen TODO \end{abstract}
+\newpage
+
 
 \section{Einleitung}
-Move Base ist ein ROS-Paket das dazu verwendet wird einem Roboter ein örtliches Ziel zu vermitteln und dieses Ziel in Kombination von mehreren ROS-Nodes (globalen- und lokalen Planer, globale und lokale costmap, etc.) zu versuchen, zu erreichen.\\
-Das Ziel wird der Move Base in Form einer Action vermittelt, mit der Idee aus einer ROS-Message nach Möglichkeit eine Reihe von Fahrbefehlen unter Berücksichtigung von Kollisionsvermeidung, optimaler Pfadplanung (in Abhängigkeit von lokalem und globalem Planner) ausuzführen.
+Das Move\_Base-Paket ist ein ROS-Paket, das dazu verwendet wird einem Roboter ein örtliches Ziel zu vermitteln und dieses Ziel in Kombination von mehreren ROS-Nodes (globalen- und lokalen Planer, globale und lokale costmap, etc.) zu versuchen, zu erreichen.\\
+Das Ziel wird der Move Base in Form einer Action vermittelt, mit der Idee aus einer ROS-Message nach Möglichkeit eine Reihe von Fahrbefehlen unter Berücksichtigung von Kollisionsvermeidung, optimaler Pfadplanung (in Abhängigkeit von lokalem und globalem Planner) auszuführen.\\
+Das Move\_Base-Paket stellt dadurch einen essentiellen Teil des nav\_cores in ROS dar, da es einem Benutzer bzw. einer Anwendung einfach ermöglicht ein gewünschtes örtliches Ziel zu erreichen, indem das Zusammenspiel zwischen den verschiedenen Komponenten des nav\_cores koordiniert wird.
 
+\section{Motivation}
+Aufgrund der steigenden Komplexität in Robotersystemen möchte man die verschiedenen Teilaufgaben gemäß moderner Softwareentwicklungsverfahren gestalten bzw. wie in der objektorientierten Softwareentwicklung einer Instanz des Systems eine Aufgabe erteilen, die sich dann um die Erfüllung (oder Scheiterung) dieser Aufgabe kümmert.\\
+Durch eine geschickte Gestaltung der verschiedenen Softwarekomponenten erhält man eine einfache Wart- und Erweiterbarkeit des Systems, die sich in einem Robotersystem so äußern könnte dass man einem Teil der Software mitteilt dass man ein bestimmtes Ziel erreichen möchte und dieses Ziel dann von diesem Teil erfüllt wird.\\
+Dies ermöglicht die Move\_Base, in dem ihr mittels ROS-Message ein Ziel in Form einer geometry\_msgs/PoseStamped Nachricht vermittelt wird, welches Ziel zu erreichen ist. Nachfolgend wird im Detail erklärt, welche Komponenten dabei wichtige Rollen spielen.
+\newpage
 \section{Komponenten}
-Move\_base besteht aus folgenden Komponenten:
-\begin{description}
+Move\_base besteht aus folgenden Komponenten: \cite{moveBase}
+\begin{figure}
+	\centering
+  \includegraphics[width=\textwidth]{overview_tf.png}
+	\caption{Komponentenübersicht}
+	\cite{moveBaseComponenents}
+	\label{fig2}
+\begin{description}	
 \item[Globaler Planer]
-Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseGlobalPlanner erfüllt. Er ist für die Pfadplanung innerhalb der Karte zuständig, führt also beispielsweise eine A* - Suche durch, um von einem gegebenen Anfangspunkt den gewünschten Endpunkt zu erreichen.
+Dies kann ein beliebiger globaler Planer sein, solange er das Interface nav\_core::BaseGlobalPlanner erfüllt. Er ist für die Pfadplanung innerhalb der Karte zuständig, führt also beispielsweise eine A* - Suche durch, um von einem gegebenen Anfangspunkt den gewünschten Endpunkt zu erreichen.
 \item[Lokaler Planer]
 Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt. Aufgabe des lokalen Planers ist das Erreichen des nächsten Punkts den der globale Planer gegeben hat, bzw. das ausgeben von Fahrbefehlen zum erreichen dieses nächsten Punkts.
 \item[Globale Costmap]
 Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt
 \item[Lokale Costmap]
 Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt
+%\end{description}
+\item[Recovery Behaviour]
+Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt.
+
 \end{description}
 
-\section{Verwandte Arbeiten/Stand der Technik}
+Nachfolgend werden die einzelnen Komponenten beschrieben.
+\end{figure}
 
-asiuhfhfsauhafds
-\section{Technischer Hintergrund} \section{Eigene Arbeit} \section{Evaluation} \section{Zusammenfassung/Ausblick}
+\subsection{Globaler Planer}
+%A-Stern, navfn, carrot-planner, SBPL
+Der globale Planer erhält unter dem ROS-Topic \textit{move\_base\_simple/goal} eine Message vom Typ \textit{geometry\_msgs/PoseStamped}, die unter Berücksichtigung der globalen Costmap beispielsweise mithilfe von A* berechnet, welcher Pfad durch die einzelnen Knotenpunkte in der Karte zum Ziel führen.\\
+Hierbei wird seitens der ROS-Wiki als grundliegende Implementationen \textit{navfn} und der \textit{carrot\_planner} aufgeführt:
+\subsubsection{navfn}
+Über die jeweilige Karte wird ein Grid gelegt, durch das von der Anfangsposition aus bis zum Endpunkt eine Suche mittels Dijkstra durchgeführt wird, die den optimalen Pfad liefert, sofern er verfügbar ist.\\
+Laut Diskussion wurde hier auf Dijkstra gesetzt, da er im Vergleich zu einem A* - Algorithmus eher optimale Pfade liefert. \cite{navfn}
+\subsubsection{carrot\_planner}
+Wenn der Zielpunkt innerhalb eines Objekts liegt, wird entlang des Vektors vom Roboter zur Zielposition so lange zurück gegangen, bis ein Punkt ausserhalb des Objekts gefunden wurde, den der Roboter erreichen kann. Dadurch wird dem Roboter ermöglicht, das Ziel so nah wie möglich zu erreichen. Es wird hierbei also nicht viel geplant, sondern lediglich einem lokalen Planer ein einfacher Plan zur Verfügung gestellt. \cite{carrotPlanner}
+
+\subsection{Lokaler Planer}
+%Navigation vom einen Punkt zum nächsten, Kollisionsvermeidung.
+Aufgabe des lokalen Planers ist das Erreichen des nächsten Punkts, der im vom globalen Planer übermittelten Plan steht. Grundliegend ist in ROS der \textit{base\_local\_planner} implementiert: \subsubsection{base\_local\_planner}
+Dieses Paket beinhaltet zwei verschiedene Implementierungen zur Ausführung eines vom globalen Planer gegebenen Pfads. Dazu zählt das \textit{Trajectory Rollout} und der \textit{Dynamic Window Approach (DWA)}, die folgendes Verfahren gemeinsam haben:
+\begin{enumerate}	
+\item Ermittle verschiedene Bewegungsmuster die dem Roboter zur Verfügung stehen (dx, dy, dtheta)
+\item Simuliere eine Bewegung für jedes dieser Bewegungsmuster um abzuschätzen, was beim Ausführen dieser Bewegung passieren würde wenn die Bewegung für einen bestimmten (kurzen) Zeitraum ausgeführt wird.
+\item Bewerte jedes Bewegungsmuster, das in der Simulation ausgeführt wurde anhand von Werten wie Abstand zu anderen Objekten, Nähe zum Zielpunkt, Nähe an den globalen Pfad und Geschwindigkeit. Verwerfe ungültige Bewegungsmuster, also solche, die mit anderen Objekten kollidieren.
+\item Nimm das Bewegungsmuster mit der höchsten Bewertung und gebe dieses als ausführbare Steuerbefehle (standardmäßig \textit{geometry\_msgs::Twist} an Topic \textit{cmd\_vel}) aus.
+\item Wiederhole ab 1. Punkt.
+\end{enumerate}
+
+Der konkrete Unterschied zwischen dem \textit{Trajectory Rollout} und dem \textit{Dynamic Window Approach (DWA)} besteht in der Erstellung der Bewegungsmuster.\\
+\textit{Trajectory Rollout} probiert verschiedene mögliche Geschwindigkeiten über die gesamte gegebene Simulationszeit in Abhängigkeit von den für den Roboter möglichen Beschleunigungen.\\
+\textit{DWA} probiert die verschiedenen Geschwindigkeiten für nur einen Simulationsschritt (auch in Abhängigkeit von den Beschleunigungen).\\
+\textit{DWA} wird laut ROS-Wiki aufgrund seiner höheren Effizienz (es probiert innerhalb von kleineren möglichen Bewegungsmuster als \textit{Trajectory Rollout}) \cite{baseLocalPlanner}
+Zum \textit{DWA} gibt es zusätzlich eine separate Implementierung in ROS:\\ \textbf{http://wiki.ros.org/dwa\_local\_planner}.
+\subsection{Globale und lokale Costmap}
+Die Costmap berechnet anhand von Sensorinformationen ein 2D oder 3D - Raster mit Belegungen und Grid TODO \cite{costmap2d}
+%\subsection{Lokale Costmap}
+\subsection{Recovery Behaviours}
+\section{Beispielhafte Implementierung an einem Rover}
+Nachfolgend wird ein Beispiel mithilfe der vom Maskor-Institut der Fachhochschule Aachen gestellten Rover aufgeführt, mit dem die Verwendung der \textit{move\_base} möglich ist, in dem man für den globalen und lokalen Planer andere Pakete nimmt, die sich eher für Roboter eignen, die ein Fahrgestell nach Ackermann besitzen.\\
+\subsection{Problem: Ackermann im Vergleich zu (nicht-) holonomen Robotern}
+Ein Roboter, der ein Ackermann-Fahrgestell besitzt unterscheidet sich von anderen mobilen Robotern grundliegend darin dass er sich einerseits nicht auf der Stelle drehen kann und sich auch nicht seitlich bewegen kann.\\
+Die oben genannten Implementationen der globalen und lokalen Planer gehen aber davon aus dass der Roboter sich zumindest auf der Stelle drehen kann.\\
+Dies erschwert die Möglichkeit, den \textit{ROS Navigation Stack} mit Robotern zu verwenden, die Ackermann-getrieben sind.\cite{ackermannGroup}
+\subsubsection{Lösung}
+Für die Pfadplanung (bzw. Aktionsplanung) existiert eine von der Carnegie Mellon University (Dr. Maxim Likhachev\cite{likhachev}) entwickelte Bibliothek, die sich (\textit{SBPL - Search Based Planning Library})\cite{sbplMain} nennt und es, neben anderen Features, erlaubt unter Verwendung des \textit{SBPL Lattice Planners} eine Folge von Aktionen TODO
+\subsection{Globaler Planer}
+%SBPL
+\subsection{Lokaler Planer}
+%Eigener lokaler Planer (Umbau von TrajectoryPlanner)
+\subsection{Globale und lokale Costmap}
+\subsection{Globale Costmap}
+%?
+%\subsection{Lokale Costmap}
+%?
+\subsection{Recovery Behaviours}
+%Anpassung, da auch hier kein Drehen auf der Stelle möglich ist.
+
+%\section{Verwandte Arbeiten/Stand der Technik}
+
+%\section{} \section{Eigene Arbeit} 
+%\section{Evaluation} 
+%\section{Zusammenfassung/Ausblick}
 
 \bibliographystyle{IEEEtran} \bibliography{paper} %paper ist Literaturverzeichnis
+
 
 \end{document}
