@@ -17,7 +17,7 @@
 
 
 \begin{abstract} Dieser Bericht stellt eine Zusammenfassung der verschiedenen Komponenten des in ROS implementierten Move\_Base-Pakets dar, das ROS-Package move\_base stellt  die Möglichkeit dar mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, dessen TODO \end{abstract}
-\newpage
+%\newpage
 
 
 \section{Einleitung}
@@ -87,6 +87,23 @@ Zum \textit{DWA} gibt es zusätzlich eine separate Implementierung in ROS:\\ \te
 Die Costmap berechnet anhand von Sensorinformationen ein 2D oder 3D - Raster mit Belegungen und Grid TODO \cite{costmap2d}
 %\subsection{Lokale Costmap}
 \subsection{Recovery Behaviours}
+Die Recovery Behaviours sind ein optionales Feature der Move\_Base und eignen sich für einen Umstand, in dem der Roboter zwar durch den globalen Planer einen gültigen Plan erhalten hat, aber diesen, beispielsweise aufgrund der Dynamik in der Umwelt, nicht länger verfolgen kann und deswegen einen neuen Pfad berechnen muss.\\
+\begin{figure}
+	\centering
+  \includegraphics[width=\textwidth]{recovery_behaviors.png}
+	\caption{Recovery Behaviours}
+	\cite{recoveryBehavioursImage}
+	\label{fig2}
+\end{figure}
+
+Dabei wird folgendes Schema verwendet:\cite{recoveryBehaviours}\\
+\begin{enumerate}
+\item [Navigating] Solange die Navigation ohne Probleme weiter läuft (globaler Pfad ist verfolgbar), fahre mit der Navigation fort.
+\item [Conservative Reset] Wenn der Roboter feststeckt werden zu Beginn alle Objekte ausserhalb eines vom Benutzer festgelegten Bereichs entfernt. Danach wird nach Möglichkeit eine Rotation auf der Stelle durchgeführt, die den Raum innerhalb der costmaps zu klären, damit ein neuer Pfad gefunden werden kann.
+\item [Aggresive Reset] Wenn das Conservative Reset nicht geholfen hat, wird beim Aggressive Reset die costmap innerhalb eines festgelegten Bereichs vollständig zurückgesetzt und anschließend eine erneute Clearing Rotation durchgeführt.
+\item [Aborted] Wenn auch der vorige Schritt fehlschlägt wird davon ausgegangen dass aus der aktuellen Situation kein Ausweg besteht und die Navigationsaufgabe wird abgebrochen.
+\end{enumerate}
+
 \section{Beispielhafte Implementierung an einem Rover}
 Nachfolgend wird ein Beispiel mithilfe der vom Maskor-Institut der Fachhochschule Aachen gestellten Rover aufgeführt, mit dem die Verwendung der \textit{move\_base} möglich ist, in dem man für den globalen und lokalen Planer andere Pakete nimmt, die sich eher für Roboter eignen, die ein Fahrgestell nach Ackermann besitzen.\\
 \subsection{Problem: Ackermann im Vergleich zu (nicht-) holonomen Robotern}

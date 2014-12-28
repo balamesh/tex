@@ -25,7 +25,14 @@
 Move\_Base, ``http://wiki.ros.org/move\_base''
 
 \bibitem{moveBaseComponenents}
-Move\_Base-Components ``http://wiki.ros.org/move\_base?action=AttachFile\&do=view\&target=overview\_tf.png''
+Move\_Base-Components Image ``http://wiki.ros.org/move\_base?action=AttachFile\&do=view\&target=overview\_tf.png''
+
+
+\bibitem{recoveryBehavioursImage}
+Recovery Behaviours Image ``http://wiki.ros.org/move\_base?action=AttachFile\&do=get\&target=recovery\_behaviors.png''
+
+\bibitem{recoveryBehaviours}
+Rotate Recovery ``http://wiki.ros.org/rotate\_recovery''
 
 \bibitem{navfn}
 navfn, ``http://wiki.ros.org/navfn''
@@ -46,7 +53,7 @@ Ackermann Group, ``http://wiki.ros.org/Ackermann%20Group''
 SBPL, ``http://sbpl.net''
 
 \bibitem{sbplLatticePlanner}
-SBPL Lattice Planner, ``http://sbpl.net''
+SBPL Lattice Planner, ``http://wiki.ros.org/sbpl\_lattice\_planner''
 
 \bibitem{likhachev}
 Dr. Maxim Likhachev, ``http://www.cs.cmu.edu/~maxim/''
