@@ -106,7 +106,28 @@ Für die Pfadplanung (bzw. Aktionsplanung) existiert eine von der Carnegie Mello
 %?
 \subsection{Recovery Behaviours}
 %Anpassung, da auch hier kein Drehen auf der Stelle möglich ist.
-
+\section{Action API}
+Die move\_base Knoten stellt eine Implementierung des SimpleActionServer (siehe actionlib Dokumentation) zur Verfüpgung der die Ziele der geometry\_msgs/PoseStamped Nachrichten enthält. Die Kommunikation mit den move\_base Knoten ist direkt über ROS möglich. Es wird aber empfohlen die Ziele über den SimpleActionClient zu schicken, sofern eine Nachverfolgung des Status gewünscht wird.
+\subsection{Action Subscribed Topics}
+\subsubsection{move\_base/goal} (move\_base\_msgs/MoveBaseActionGoal)\\
+	Ein Ziel das move\_base in der Welt verfolgen soll.
+\subsubsection{move\_base/cancel} (actionlib\_msgs/GoalID)\\
+	Anfrage um ein bestimmtes Ziel nicht mehr zu verfolgen.
+\subsection{Action Published Topics}
+\subsubsection{move\_base/feedback} (move\_base\_msgs/MoveBaseActionFeedback)\\
+	Enthält die aktuelle Position der Basis in der Welt
+\subsubsection{move\_base/status} (actionlib\_msgs/GoalStatusArray)\\
+	Enthät Statusinformationen der Ziele die an move\_base geschickt werden.
+\subsubsection{move\_base/result} (move\_base\_msgs/MoveBaseActionResult)\\
+	Rückgabewert ist leer für move\_base action.
+\section{Topics}
+\subsection{Subscribed Topics}
+\subsubsection{move\_base\_simple/goal} (geometry\_msgs/PoseStamped)\\
+	Bietet ein non-action interface für move\_base für Benutrzer bei dennen die Nachverfolgung der Aktionen nicht relevant ist.
+\subsection{Published Topics}
+\subsubsection{cmd\_vel} (geometry\_msgs/Twist)\\
+	Forlaufende Bewegungsbefejle die durch eine mobile base ausgeführt werden 	sollen.
+	
 \section{Services}
 \subsubsection{make\_plan} (nav\_msgs/GetPlan)\\
 	Ermöglicht einem externen Benutzer einen Plan zu einem Ziel zu bekommen ohne 	das move\_base diesen verfolgt.
