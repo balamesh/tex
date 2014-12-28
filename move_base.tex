@@ -107,6 +107,56 @@ Für die Pfadplanung (bzw. Aktionsplanung) existiert eine von der Carnegie Mello
 \subsection{Recovery Behaviours}
 %Anpassung, da auch hier kein Drehen auf der Stelle möglich ist.
 
+\section{Services}
+\subsubsection{make\_plan} (nav\_msgs/GetPlan)\\
+	Ermöglicht einem externen Benutzer einen Plan zu einem Ziel zu bekommen ohne 	das move\_base diesen verfolgt.
+\subsubsection{clear\_unknown\_space} (std\_srvs/Empty)\\
+	Ermöglicht einen externen Benutzer den Bereich um den Roboter auf leer zu setzen. 	Dieses kann verwendet werden wenn der Roboter in einen neue Umgebung gesetzt 	wird.
+\subsubsection{clear\_costmaps} (std\_srvs/Empty)\\
+	Erlaubt einen externen Benutzer Objecte aus der costmap zu entfernen. Da dieses 	zu Kollisionen führen kann, sollte diese Funktion mit Vorsicht benutzt werden. Sie 	kann dennoch hilfreich sein, wenn es Fehlern in der costmap gibt.
+	
+\section{Parameter}
+Nachfolgend werden Parameter an die Move\_Base aufgelistet, die entweder beim Starten der Move\_Base beispeilsweise in einem Launch-File oder über den ROS-Parameterserver gesetzt werden.
+\subsubsection{base\_global\_planner} (string, default: "navfn/NavfnROS")\\
+   Name des Plugins das als Globaler Planer mit move\_base benutzt wird. VGL. Abschnitt "Komponenten / Globaler Planer".
+
+\subsubsection{base\_local\_planner} (string, default: "base\_local\_planner/TrajectoryPlannerROS" For 1.1+ series)\\
+   VGL. Abschnitt "Komponenten / Lokaler Planer".
+   
+   
+\subsubsection{recovery\_behaviors} (list, default: [{name: conservative\_reset, type: clear\_costmap\_recovery/ClearCostmapRecovery}, {name: rotate\_recovery, type: rotate\_recovery/RotateRecovery}, {name: aggressive\_reset, type: clear\_costmap\_recovery/ClearCostmapRecovery}])\\
+   VGL. Abschnitt "Komponenten / Recovery Behaviours".
+   
+\subsubsection{controller\_frequency} (double, default: 20.0)\\
+	Die Rate in Hz in der die Fahrbefehle an den Basiskonten gesendet werden.
+	
+\subsubsection{planner\_patience} (double, default: 5.0)\\
+	Wert wie lange in Sekunden der Planer versucht einen Plan zu finden bis spaceclearing Operationen eingeleitet werden (siehe Recovery Behaviours).
+	
+\subsubsection{controller\_patience} (double, default: 15.0)\\
+	Wert wie lange in Sekunden der Kontroller auf richtige Komandos wartet bis spaceclearing Operationen eingeleitet werden.
+	
+\subsubsection{conservative\_reset\_dist} (double, default: 3.0)\\
+	Abstand von Hindernissen in Meteren zum Roboter die aus der costmap entfernt 	werden wenn versucht wird Platz in der costmap zu schaffen.
+	
+\subsubsection{recovery\_behavior\_enabled} (bool, default: true)\\
+	Ein und ausschalten der move\_base recovery behaviors.
+
+\subsubsection{clearing\_rotation\_allowed} (bool, default: true)\\
+	Erlaubt oder Verbietet Rotationen um die eigene Achse beim Versuch von clear out 	space
+	Hinweis: Diese Parameter wird nur beim Standard recovery behaviors benutzt
+
+\subsubsection{shutdown\_costmaps} (bool, default: false)\\
+	Eingabe Paramter ist ein Boolean. Gibt an ob die costmap ausgeschaltet wird wenn 	die move\_base auf inaktiv gesetzt ist
+\subsubsection{oscillation\_timeout} (double, default: 0.0)\\
+	Wert in Sekunden bis das recovery behaviour ausgelöst wird.
+\subsubsection{oscillation\_distance} (double, default: 0.5)\\
+	Strecke in Metern die der Roboter zurücklegen muss um sicher zu sein nicht zu 	schwingen. Setzt den Timer oscillation\_timeout zurück.
+\subsubsection{planner\_frequency} (double, default: 0.0)\\
+	Frequenz in Hertz in der die Globale Planber Schleife ausgeführt wird.
+	0.0 führt den Globalen Planer nur bei einem neuen Ziel aus oder der lokale Planer 	eine unmögliche Route meldet.	
+%\subsubsection{•}
+
 %\section{Verwandte Arbeiten/Stand der Technik}
 
 %\section{} \section{Eigene Arbeit} 
