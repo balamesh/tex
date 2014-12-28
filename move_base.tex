@@ -5,7 +5,9 @@
 \usepackage{cite} %Vereinfachung der Referenzen: [1], [2], [3] => [1-3]
 \usepackage{makeidx}         % allows index generation
 
-\usepackage{graphicx} \usepackage[cmex10]{amsmath} %mathamatische Formeln %\usepackage{stfloat} %Bilder über zwei Spalten &\usepackage{url}
+\usepackage{graphicx} \usepackage[cmex10]{amsmath} %mathamatische Formeln 
+\usepackage{wrapfig}
+%\usepackage{stfloat} %Bilder über zwei Spalten &\usepackage{url}
 \makeindex             % used for the subject index
 
 \begin{document} \title{ROS - Move Base}
@@ -16,7 +18,8 @@
 %\tableofcontents
 
 
-\begin{abstract} Dieser Bericht stellt eine Zusammenfassung der verschiedenen Komponenten des in ROS implementierten Move\_Base-Pakets dar, das ROS-Package move\_base stellt  die Möglichkeit dar mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, dessen TODO \end{abstract}
+\begin{abstract} Dieser Bericht stellt eine Zusammenfassung der verschiedenen Komponenten des in ROS implementierten Move\_Base-Pakets dar.\\
+Das ROS-Package move\_base stellt  die Möglichkeit dar mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, auf dem der Navigation Stack\cite{navigation} in ROS vollständig implementiert ist, da die Move\_Base lediglich eine Schnittstelle für den Benutzer darstellt, damit der Nutzer einen Navigationsbefehl absetzen (beispielsweise über das Tool \textit{RViz}) kann und dieser Befehl von der Base unter Berücksichtigung von Kollisionsvermeidung ausgeführt wird.\end{abstract}
 %\newpage
 
 
@@ -84,7 +87,8 @@ Der konkrete Unterschied zwischen dem \textit{Trajectory Rollout} und dem \texti
 \textit{DWA} wird laut ROS-Wiki aufgrund seiner höheren Effizienz (es probiert innerhalb von kleineren möglichen Bewegungsmuster als \textit{Trajectory Rollout}) \cite{baseLocalPlanner}
 Zum \textit{DWA} gibt es zusätzlich eine separate Implementierung in ROS:\\ \textbf{http://wiki.ros.org/dwa\_local\_planner}.
 \subsection{Globale und lokale Costmap}
-Die Costmap berechnet anhand von Sensorinformationen ein 2D oder 3D - Raster mit Belegungen und Grid TODO \cite{costmap2d}
+Die Costmap berechnet anhand von Sensorinformationen ein 2D oder 3D - Raster mit Belegungen und erweitert die Karte um Belegungen bzw. TODO
+\cite{costmap2d}
 %\subsection{Lokale Costmap}
 \subsection{Recovery Behaviours}
 Die Recovery Behaviours sind ein optionales Feature der Move\_Base und eignen sich für einen Umstand, in dem der Roboter zwar durch den globalen Planer einen gültigen Plan erhalten hat, aber diesen, beispielsweise aufgrund der Dynamik in der Umwelt, nicht länger verfolgen kann und deswegen einen neuen Pfad berechnen muss.\\
@@ -111,9 +115,60 @@ Ein Roboter, der ein Ackermann-Fahrgestell besitzt unterscheidet sich von andere
 Die oben genannten Implementationen der globalen und lokalen Planer gehen aber davon aus dass der Roboter sich zumindest auf der Stelle drehen kann.\\
 Dies erschwert die Möglichkeit, den \textit{ROS Navigation Stack} mit Robotern zu verwenden, die Ackermann-getrieben sind.\cite{ackermannGroup}
 \subsubsection{Lösung}
-Für die Pfadplanung (bzw. Aktionsplanung) existiert eine von der Carnegie Mellon University (Dr. Maxim Likhachev\cite{likhachev}) entwickelte Bibliothek, die sich (\textit{SBPL - Search Based Planning Library})\cite{sbplMain} nennt und es, neben anderen Features, erlaubt unter Verwendung des \textit{SBPL Lattice Planners} eine Folge von Aktionen TODO
+Für die Pfadplanung (bzw. Aktionsplanung) existiert eine von der Carnegie Mellon University (Dr. Maxim Likhachev\cite{likhachev}) entwickelte Bibliothek, die sich (\textit{SBPL - Search Based Planning Library})\cite{sbplMain} nennt und es, neben anderen Features, erlaubt unter Verwendung des \textit{SBPL Lattice Planners} eine Folge von Aktionen durchzuführen, die einem Ackermann-getriebenen Roboter ermöglichen ein Ziel zu erreichen.\\
+SBPL kommt hier unter der Verwendung des Lattice Planners als globaler Planer zum Einsatz, da er die Möglichkeit darstellt, einen Pfad zu berechnen der den Aktionenraum des gegebenen Roboters berücksichtigt und nicht darüber hinaus geht.
+\newpage
 \subsection{Globaler Planer}
 %SBPL
+\begin{wrapfigure}[12]{l}{0.5\textwidth}
+  \begin{center}
+  \vspace{-30pt}
+    \includegraphics[width=0.48\textwidth]{motionPrimitive.png}
+%    \vspace{-20pt}
+    \caption{Motion Primitive}
+	\cite{SBPLRosSchool}
+  \end{center}
+\end{wrapfigure}
+Wie bereits beschrieben kommt hier der SBPL Lattice Planner zum Einsatz.\\
+Damit der Lattice Planner weiß, welche Möglichkeiten er für die Umsetzung seines Plans hat, benötigt er neben der Karte (die nach wie vor eine costmap ist) eine Reihe von Motion Primitives, diese werden nachfolgend beschrieben:\\
+\begin{figure}
+\begin{wrapfigure}[12]{r}{0.3\textwidth}
+  \begin{center}
+  \vspace{-30pt}
+    \includegraphics[width=0.28\textwidth]{motionPrimitive2.png}
+%    \vspace{-10pt}
+    \caption{Motion Primitives im Graphen}
+	\cite{SBPLRosSchool}
+  \end{center}
+\end{wrapfigure}
+\textbf{Motion Primitives} sind im SBPL-Kontext Beschreibungen für Aktionen, die ein Roboter in einem Zustand durchführen kann.\\
+Am Beispiel des Rovers wäre das also entweder eine Geradeausfahrt oder eine Fahrt stark oder leicht zur einen oder anderen Seite eingeschlagen.
+\end{figure}
+\\\\\\\\
+\begin{figure}
+\begin{wrapfigure}[12]{r}{0.4\textwidth}
+  \begin{center}
+  \vspace{-20pt}
+    \includegraphics[width=0.38\textwidth]{sbplGraphCreation.png}
+%    \vspace{-10pt}
+    \caption{Motion Primitive}
+	\cite{SBPLRosSchool}
+  \end{center}
+\end{wrapfigure}
+\textbf{Pfaderstellung} SBPL legt mit den Motion Primitives einen Graph über die Umweltsind im SBPL-Kontext Beschreibungen für Aktionen, die ein Roboter in einem Zustand durchführen kann.\\
+Am Beispiel des Rovers wäre das also entweder eine Geradeausfahrt oder eine Fahrt stark oder leicht zur einen oder anderen Seite eingeschlagen.
+\end{figure}
+\newpage
+
+
+
+%\begin{wrapfigure}{r}{0.5\textwidth}
+%	\centering
+%  \includegraphics[width=0.5\textwidth]{motionPrimitive.png}
+%	\caption{Motion Primitive}
+%	\cite{SBPLRosSchool}
+%	\label{fig2}
+%\end{wrapfigure}
 \subsection{Lokaler Planer}
 %Eigener lokaler Planer (Umbau von TrajectoryPlanner)
 \subsection{Globale und lokale Costmap}

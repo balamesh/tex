@@ -21,15 +21,18 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
+\bibitem{navigation}
+Navigation, ``http://wiki.ros.org/navigation''
+
 \bibitem{moveBase}
 Move\_Base, ``http://wiki.ros.org/move\_base''
 
 \bibitem{moveBaseComponenents}
-Move\_Base-Components Image ``http://wiki.ros.org/move\_base?action=AttachFile\&do=view\&target=overview\_tf.png''
+Move\_Base-Components Image\\``http://wiki.ros.org/move\_base?action=AttachFile\&do=view\&target=overview\_tf.png''
 
 
 \bibitem{recoveryBehavioursImage}
-Recovery Behaviours Image ``http://wiki.ros.org/move\_base?action=AttachFile\&do=get\&target=recovery\_behaviors.png''
+Recovery Behaviours Image\\``http://wiki.ros.org/move\_base?action=AttachFile\&do=get\&target=recovery\_behaviors.png''
 
 \bibitem{recoveryBehaviours}
 Rotate Recovery ``http://wiki.ros.org/rotate\_recovery''
@@ -54,6 +57,9 @@ SBPL, ``http://sbpl.net''
 
 \bibitem{sbplLatticePlanner}
 SBPL Lattice Planner, ``http://wiki.ros.org/sbpl\_lattice\_planner''
+
+\bibitem{SBPLRosSchool}
+SBPL ROS School,\\``http://www.ros.org/wiki/Events/CoTeSys-ROS-School?\\action=AttachFile\&do=get\&target=robschooltutorial\_oct10.pdf''
 
 \bibitem{likhachev}
 Dr. Maxim Likhachev, ``http://www.cs.cmu.edu/~maxim/''
