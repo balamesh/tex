@@ -7,6 +7,7 @@
 
 \usepackage{graphicx} \usepackage[cmex10]{amsmath} %mathamatische Formeln 
 \usepackage{wrapfig}
+\usepackage{placeins}
 \usepackage{mathtools}
 %\usepackage{stfloat} %Bilder über zwei Spalten &\usepackage{url}
 \makeindex             % used for the subject index
@@ -47,17 +48,15 @@ Dies kann ein beliebiger globaler Planer sein, solange er das Interface nav\_cor
 \item[Lokaler Planer]
 Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt. Aufgabe des lokalen Planers ist das Erreichen des nächsten Punkts den der globale Planer gegeben hat, bzw. das ausgeben von Fahrbefehlen zum erreichen dieses nächsten Punkts.
 \item[Globale Costmap]
-Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt
+Die globale Costmap, näher unter Punkt \ref{costmap} beschrieben.
 \item[Lokale Costmap]
-Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt
-%\end{description}
+Die lokale Costmap, näher unter Punkt \ref{costmap} beschrieben.
 \item[Recovery Behaviour]
-Dies kann ein beliebiger Planer sein, solange er das Interface nav\_core::BaseLocalPlanner erfüllt.
-
+Die Recovery Behaviours, die dazu dienen ein Verhalten für Probleme mit dem geplanten Pfad und der Dynamik der Umwelt zu definieren. Näher beschrieben unter Punkt \ref{recoveryBehaviours}.
 \end{description}
+\end{figure}
 
 Nachfolgend werden die einzelnen Komponenten beschrieben.
-\end{figure}
 
 \subsection{Globaler Planer}
 %A-Stern, navfn, carrot-planner, SBPL
@@ -69,7 +68,7 @@ Laut Diskussion wurde hier auf Dijkstra gesetzt, da er im Vergleich zu einem A* 
 \subsubsection{carrot\_planner}
 Wenn der Zielpunkt innerhalb eines Objekts liegt, wird entlang des Vektors vom Roboter zur Zielposition so lange zurück gegangen, bis ein Punkt ausserhalb des Objekts gefunden wurde, den der Roboter erreichen kann. Dadurch wird dem Roboter ermöglicht, das Ziel so nah wie möglich zu erreichen. Es wird hierbei also nicht viel geplant, sondern lediglich einem lokalen Planer ein einfacher Plan zur Verfügung gestellt. \cite{carrotPlanner}
 
-\subsection{Lokaler Planer}
+\subsection{Lokaler Planer} \label{localPlanner}
 %Navigation vom einen Punkt zum nächsten, Kollisionsvermeidung.
 Aufgabe des lokalen Planers ist das Erreichen des nächsten Punkts, der im vom globalen Planer übermittelten Plan steht. Grundliegend ist in ROS der \textit{base\_local\_planner} implementiert: \subsubsection{base\_local\_planner}
 Dieses Paket beinhaltet zwei verschiedene Implementierungen zur Ausführung eines vom globalen Planer gegebenen Pfads. Dazu zählt das \textit{Trajectory Rollout} und der \textit{Dynamic Window Approach (DWA)}, die folgendes Verfahren gemeinsam haben:
@@ -86,11 +85,7 @@ Der konkrete Unterschied zwischen dem \textit{Trajectory Rollout} und dem \texti
 \textit{DWA} probiert die verschiedenen Geschwindigkeiten für nur einen Simulationsschritt (auch in Abhängigkeit von den Beschleunigungen).\\
 \textit{DWA} wird laut ROS-Wiki aufgrund seiner höheren Effizienz (es probiert innerhalb von kleineren möglichen Bewegungsmuster als \textit{Trajectory Rollout}) \cite{baseLocalPlanner}
 Zum \textit{DWA} gibt es zusätzlich eine separate Implementierung in ROS:\\ \textbf{http://wiki.ros.org/dwa\_local\_planner}.
-\subsection{Globale und lokale Costmap}
-Die Costmap berechnet anhand von Sensorinformationen ein 2D oder 3D - Raster mit Belegungen und erweitert die Karte um Belegungen bzw. TODO
-\cite{costmap2d}
-%\subsection{Lokale Costmap}
-\subsection{Recovery Behaviours}
+\subsection{Recovery Behaviours} \label{recoveryBehaviours}
 Die Recovery Behaviours sind ein optionales Feature der Move\_Base und eignen sich für einen Umstand, in dem der Roboter zwar durch den globalen Planer einen gültigen Plan erhalten hat, aber diesen, beispielsweise aufgrund der Dynamik in der Umwelt, nicht länger verfolgen kann und deswegen einen neuen Pfad berechnen muss.\\
 \begin{figure}
 	\centering
@@ -107,6 +102,18 @@ Dabei wird folgendes Schema verwendet:\cite{recoveryBehaviours}
 \item [Aggresive Reset] Wenn das Conservative Reset nicht geholfen hat, wird beim Aggressive Reset die costmap innerhalb eines festgelegten Bereichs vollständig zurückgesetzt und anschließend eine erneute Clearing Rotation durchgeführt.
 \item [Aborted] Wenn auch der vorige Schritt fehlschlägt wird davon ausgegangen dass aus der aktuellen Situation kein Ausweg besteht und die Navigationsaufgabe wird abgebrochen.
 \end{enumerate}
+
+\section{Costmap} \label{costmap}
+Das costmap\_2d Paket \cite{costmap2d} bietet eine konfigurierbare Struktur in Form eines \textit{occupancy grids}. Costmap benutzt Sensorinformationen und Informationen von der statische Karte um neue Objekte in Form eines costmap\_2d::Costmap2DROS Objektes zur Verfügung zu stellen. Dieses Objekt bietet eine rein zweidimensionale Schnittstelle. Das bedeutet, dass Objekte nur zweidimensional dargestellt werden können. Dieses dient der vereinfachten Planung in der Ebene.\\
+Seit Hydro sind die Methoden zur costmap-Konfiguration frei konfigurierbar. Jede Funktionalität ist in einer Ebene abgelegt. So ist beispielweise die statische Karte eine Ebene und die Hindernisse sind eine andere. Standardmäßig sind die Hindernisse in der entsprechenden Ebene in 3D abgelegt. Dieses ermöglicht einen effizienteren Umgang mit ihnen beim markieren und freigeben des Raumes.\\
+Die Hauptschnittstelle ist costmap\_2d::Costmap2DROS, die viele ROS Funktionalitäten enthält. Sie enthält costmap\_2d::LayeredCostmap welches es ermöglicht die einzelnen Ebenen im Auge zu behalten. Jede Ebene ist in der LayeredCostmap enthalten, jedoch kann jede Ebene einzeln implemeniert werden. Die Funktionalität wird über die costmap\_2d::Costmap2D Klasse zur Verfügung gestellt.
+\subsection{Markieren und Löschen}
+Die Costmap aktualisiert sich ständig mit Hilfe von Sensortopics über ROS. Jeder Sensor benutzt entweder "mark" (fügt Hindernis-Informationen zur costmap  hinzu), "clear" (entfernt Hindernis-Informationen aus der costmap) oder beides. Zum Markieren wird in das Array in die entsprechende Zelle die Kosten eingetragen. Ein Löschvorgang besteht jedoch aus Raytracing durch ein Gitter von dem Ursprung des Sensors nach außen für jede Beobachtung berichtet. Wenn eine dreidimensionale Struktur verwendet wird, werden Hindernisinformationen aus jeder Ebene in zwei Dimensionen umgerechnet, wenn diese in die costmap eingetragen werden:\\
+\subsection{Occupied, Free, und Unknown Space}
+Während jede Zelle in der costmap Werte von 0 bis 255 haben kann, hat die zugrunde liegende Struktur nur drei unterschiedliche Werte. Jede Zelle kann entweder als frei, benutzt oder unbekannt markiert werden. Jeder Status hat einen bestimmten Wert. Die Werte für occupied Zellen sind hinterlegt in costmap\_2d::LETHAL\_OBSTACLE, die Kosten für unknown Zellen sind hinterlegt in costmap\_2d::NO\_INFORMATION und die Zellen für free Space sind hinterlegt in costmap\_2d::FREE\_SPACE.
+\subsection{Map Updates}
+Die costmap wird in Zyklen mit einer Frequenz, definiert in update\_frequency, aktualisiert. Jeder Zyklus, Sensordaten kommt, Kennzeichnung und Clearing -Operationen werden in der darunterliegenden Struktur des Belegungs costmap perfomed, und diese Struktur wird in die costmap, wo die entsprechenden Kostenwerte wie oben beschrieben zugeordnet sind, projiziert. Danach wird auf jedes Hindernis mit seinen Zellen eine Operation durchgeführt, die sich Inflation nennt und mit Kosten belegt die in costmap\_2d::LETHAL\_OBSTACLE wiederzufinden sind. Diese besteht aus Vermehrungskostenwerte nach außen von jeder besetzten Zelle aus einem Benutzer - spezifizierten Reifenradius. Die Details dieser Inflation Verfahrens werden nachstehend beschrieben.
+%\subsection{Lokale Costmap}
 
 \section{Action API}
 Die move\_base Knoten stellt eine Implementierung des SimpleActionServer (siehe actionlib Dokumentation) zur Verfüpgung der die Ziele der geometry\_msgs/PoseStamped Nachrichten enthält. Die Kommunikation mit den move\_base Knoten ist direkt über ROS möglich. Es wird aber empfohlen die Ziele über den SimpleActionClient zu schicken, sofern eine Nachverfolgung des Status gewünscht wird.
@@ -180,18 +187,20 @@ Nachfolgend werden Parameter an die Move\_Base aufgelistet, die entweder beim St
 	0.0 führt den Globalen Planer nur bei einem neuen Ziel aus oder der lokale Planer eine unmögliche Route meldet.	
 \newpage
 \section{Beispielhafte Implementierung an einem Rover}
-Nachfolgend wird ein Beispiel mithilfe der vom Maskor-Institut der Fachhochschule Aachen gestellten Rover aufgeführt, mit dem die Verwendung der \textit{move\_base} möglich ist, in dem man für den globalen und lokalen Planer andere Pakete nimmt, die sich eher für Roboter eignen, die ein Fahrgestell nach Ackermann besitzen.\\
+Nachfolgend wird ein Beispiel mithilfe der vom Maskor-Institut der Fachhochschule Aachen gestellten Rover aufgeführt, mit dem die Verwendung der \textit{move\_base} möglich ist, in dem man für den globalen und lokalen Planer andere Pakete nimmt, die sich eher für Roboter mit einer Lenkung wie der eines Kraftfahrzeugs (Ackermann) eignen.\\
 \subsection{Problem: Ackermann im Vergleich zu (nicht-) holonomen Robotern}
 Ein Roboter, der ein Ackermann-Fahrgestell besitzt unterscheidet sich von anderen mobilen Robotern grundliegend darin dass er sich einerseits nicht auf der Stelle drehen kann und sich auch nicht seitlich bewegen kann.\\
 Die oben genannten Implementationen der globalen und lokalen Planer gehen aber davon aus dass der Roboter sich zumindest auf der Stelle drehen kann.\\
 Dies erschwert die Möglichkeit, den \textit{ROS Navigation Stack} mit Robotern zu verwenden, die Ackermann-getrieben sind.\cite{ackermannGroup}
 \subsubsection{Lösung}
-Für die Pfadplanung (bzw. Aktionsplanung) existiert eine von der Carnegie Mellon University (Dr. Maxim Likhachev\cite{likhachev}) entwickelte Bibliothek, die sich (\textit{SBPL - Search Based Planning Library})\cite{sbplMain} nennt und es, neben anderen Features, erlaubt unter Verwendung des \textit{SBPL Lattice Planners} eine Folge von Aktionen durchzuführen, die einem Ackermann-getriebenen Roboter ermöglichen ein Ziel zu erreichen.\\
-SBPL kommt hier unter der Verwendung des Lattice Planners als globaler Planer zum Einsatz, da er die Möglichkeit darstellt, einen Pfad zu berechnen der den Aktionenraum des gegebenen Roboters berücksichtigt und nicht darüber hinaus geht.
-%\newpage
+Für die Pfadplanung (bzw. Aktionsplanung) existiert eine von der Carnegie Mellon University (Dr. Maxim Likhachev\cite{likhachev}) entwickelte Bibliothek, die sich (\textit{SBPL - Search Based Planning Library}\cite{sbplMain}) nennt und es, neben anderen Features, erlaubt unter Verwendung des \textit{SBPL Lattice Planners} eine Folge von Aktionen durchzuführen, die einem Ackermann-getriebenen Roboter ermöglichen ein Ziel zu erreichen.\\
+In ROS bedeutet das dass man der Move\_Base als globalen Planer den \textit{SBPL Lattice Planner} gibt und als lokalen Planer einen angepassten \textit{base\_local\_planner}.\\
+Der \textit{SBPL Lattice Planner} kommt hier als globaler Planer zur Verwendung, da er die Möglichkeit darstellt, einen Pfad zu berechnen der den Aktionenraum des gegebenen Roboters berücksichtigt und nicht darüber hinaus geht. Der berechnete Pfad wird also so erstellt dass er von einem Roboter mit eingeschränkter Bewegungsfähigkeit (im Vergleich zu einem Roboter, der sich auf der Stelle drehen kann) ausgeführt werden kann.
+\newpage
 \subsection{Globaler Planer}
 %SBPL
-\begin{wrapfigure}[12]{l}{0.5\textwidth}
+\begin{figure}
+\begin{wrapfigure}[10]{l}{0.5\textwidth}
   \begin{center}
   \vspace{-30pt}
     \includegraphics[width=0.48\textwidth]{motionPrimitive.png}
@@ -201,10 +210,10 @@ SBPL kommt hier unter der Verwendung des Lattice Planners als globaler Planer zu
   \end{center}
 \end{wrapfigure}
 Wie bereits beschrieben kommt hier der SBPL Lattice Planner zum Einsatz.\\
-Damit der Lattice Planner weiß, welche Möglichkeiten er für die Umsetzung seines Plans hat, benötigt er neben der Karte (die nach wie vor eine costmap ist) eine Reihe von Motion Primitives, diese werden nachfolgend beschrieben:\\
-{
+Damit der Lattice Planner weiß, welche Möglichkeiten er für die Umsetzung seines Plans hat, benötigt er neben der Karte (die nach wie vor eine costmap ist) eine Reihe von Motion Primitives. Diese werden nachfolgend beschrieben:\\\\\\\\
+\end{figure}
 \begin{figure}
-\begin{wrapfigure}[12]{r}{0.3\textwidth}
+\begin{wrapfigure}[20]{r}{0.3\textwidth}
   \begin{center}
   \vspace{-30pt}
     \includegraphics[width=0.28\textwidth]{motionPrimitive2.png}
@@ -214,11 +223,12 @@ Damit der Lattice Planner weiß, welche Möglichkeiten er für die Umsetzung sei
   \end{center}
 \end{wrapfigure}
 \textbf{Motion Primitives} sind im SBPL-Kontext Beschreibungen für Aktionen, die ein Roboter in einem Zustand durchführen kann.\\
-Am Beispiel des Rovers wäre das also entweder eine Geradeausfahrt oder eine Fahrt stark oder leicht zur einen oder anderen Seite eingeschlagen.
+Am Beispiel des Rovers wäre das also entweder eine Geradeausfahrt oder eine Fahrt stark oder leicht zur einen oder anderen Seite eingeschlagen.\\
+Jedes Motion Primitive besitzt einen Anfangszustand und kann mehrere Endzustände haben. Dies wird benötigt, damit eine Verknüpfung der Motion Primitives aneinander erfolgen kann bzw. diese als Graphen betrachtet werden können.
+SBPL bietet auch die Möglichkeit die Bewegung eines Roboterarmes zu planen bzw. auch kollisionsfrei durchzuführen, dies soll hier allerdings nicht weiter erläutert werden.
 \end{figure}
-\\\\\\\\\\\\
 \begin{figure}
-\begin{wrapfigure}[15]{r}{0.4\textwidth}
+\begin{wrapfigure}[20]{r}{0.4\textwidth}
   \begin{center}
   \vspace{-20pt}
     \includegraphics[width=0.38\textwidth]{sbplGraphCreation.png}
@@ -227,13 +237,12 @@ Am Beispiel des Rovers wäre das also entweder eine Geradeausfahrt oder eine Fah
 	\cite{SBPLRosSchool}
   \end{center}
 \end{wrapfigure}
-\textbf{Pfaderstellung} SBPL legt mit den Motion Primitives einen Graph über die Umwelt und streicht, wie im Bild gezeigt, Knoten, die in einem Hindernis liegen bzw. (laut costmap) für den Roboter unerreichbar sind.\\
+\textbf{Pfaderstellung} SBPL verknüpft Motion Primitives, legt mit den verknüpften Motion Primitives einen Graph über die Umwelt und streicht, wie im Bild gezeigt, Knoten, die in einem Hindernis liegen oder eine Kollision auslösen würden bzw. (laut costmap) für den Roboter unerreichbar sind.\\
 Im Anschluss daran kann innerhalb von SBPL eine Graphensuche über die verschiedenen aneinander verknüpften Motion Primitives geführt werden, die einen gültigen Pfad liefert und der die Bewegungsmöglichkeiten des Roboters berücksichtigt.\\
-Die in SBPL implementierten Algorithmen für diese Graphensuche sind wie folgt:\\\\\\
+Dabei können theoretisch Schleifen entstehen. Es wird aber später im Bereich der Algorithmen zur Graphensuche gezeigt, warum diese keine Schwierigkeit darstellen.
+Die in SBPL implementierten Algorithmen für diese Graphensuche sind wie folgt:\\
 \end{figure}
-}
 %\begin{figure}
-TODO
 \newpage
 \subsubsection{ARA* - Anytime Repairing A*} funktioniert wie der A* - Algorithmus, nur dass die Heuristik-Funktion zusätzlich eine Gewichtung $\epsilon$ erhält, die in mehreren Suchschritten verkleinert wird und die Daten der Open-List nicht jedes mal neu erstellt werden müssen sondern wieder verwendet werden können.\\
 
@@ -255,7 +264,7 @@ Dadurch kann ARA* anfangs eine Lösung liefern die vielleicht nicht der optimale
 Dies bietet sich an, da in der Praxis oft Resultate zufriedenstellend sind, die nicht der besten Lösung entsprechen aber für das Problem ausreichen.\\
 Bei weiteren Iterationen wird $\epsilon$ verkleinert, sodass die Chance auf eine bessere Lösung steigt.
 TODO
-\newpage
+%\newpage
 \begin{figure}
 	\centering
   \includegraphics[width=\textwidth]{astar-vs-arastar-1.png}
@@ -270,20 +279,25 @@ TODO
 	\cite{SBPLRosSchool}
 	\label{astarvsarastar2}
 \end{figure}
-\clearpage
+%\clearpage
+%\newpage
+In ARA* wird zur Beeinflussung der Gewichtung ein $\epsilon$ genutzt (weiter unten beschrieben). Die Abbildungen \ref{astarvsarastar1} und \ref{astarvsarastar2} zeigen A* und Weighted A*, das ein essentieller Bestandteil von ARA* ist, im Vergleich.\\
+Dabei wird deutlich dass A*, wie vorher beschrieben, zwar einen optimalen Pfad liefert, dafür aber unter Umständen viel Speicher benötigt, während ARA* eine Gewichtung einfügt (weighted A*) und neben der Gewichtung $\epsilon$ bereits geöffnete Knoten erneut verwenden kann.
 \newpage
-In ARA* ist zur Beeinflussung der Gewichtung $\epsilon$ Die Abbildungen \ref{astarvsarastar1} und \ref{astarvsarastar2} zeigen A* und ARA* im Vergleich.\\
-Dabei wird deutlich dass A*, wie vorher beschrieben, zwar einen optimalen Pfad liefert, dafür aber unter Umständen viel Speicher benötigt, während ARA* eine Gewichtung einfügt (weighted A*) und neben der Gewichtung $\epsilon$ bereits geöffnete Knoten erneut verwenden kann.\\
 Die Formel zur Bestimmung von f bei weighted A* sieht wie folgt aus (auch als Wiederholung der Eigenschaften von A*):\\
-$f = g + \epsilon h, \epsilon > 1$.
+$f(s) = g(s) + \epsilon h(s), \epsilon \geq 1$.
 \begin{figure}
 \begin{itemize}
-\item [$f$] ist der Funktionswert einer Zelle, der dessen Reihenfolge in der von A* genutzten Priority Queue bestimmmen soll.
+\item [$s$] ist die Zelle bzw. der Zustand.
+\item [$f$] ist der Funktionswert der Zelle $s$, der dessen Reihenfolge in der von A* genutzten Priority Queue bestimmmen soll.
 \item [$g$] ist die bisherige Distanz vom Anfangsknoten zum aktuellen Knoten
-\item [$\epsilon$] ist die Gewichtung für die Heuristik $h(s)$
-\item [$h$] ist die Heuristik. Diese darf das echte Ziel ist der Funktionswert einer Zelle, der dessen Reihenfolge in der von A* genutzten Priority Queue bestimmmen soll.
+\item [$\epsilon$] ist die Gewichtung für die Heuristik $h(s)$. Ein $\epsilon = 1$ entspricht dem klassischen A*.
+\item [$h$] ist die Heuristik. Diese darf die echte Distanz nicht überschätzen, sodass gilt:\\
+$\forall s: h(s) \le c*(s,s_{goal})$ wobei $c$ die minimalen Kosten von $s$ zu $s_{goal}$ sind.
 \end{itemize}
 \end{figure}
+\section{Anytime D*}
+Neben der TODO
 %\begin{math}
 
 %\end{math}
@@ -300,13 +314,23 @@ $f = g + \epsilon h, \epsilon > 1$.
 %\end{wrapfigure}
 \subsection{Lokaler Planer}
 %Eigener lokaler Planer (Umbau von TrajectoryPlanner)
+Der lokale Planer ergibt sich im wesentlichen aus dem bereits in Punkt \ref{localPlanner} beschriebenen.\\
+Allerdings werden im \textbf{TrajectoryPlanner} einige Anpassungen gemacht:
+\begin{figure}
+\begin{itemize}
+\item Der Roboter darf sich nicht mehr auf der Stelle drehen. Trajektorien, die das voraussetzen, sind also in \textit{trajectory\_planner.cpp} entsprechend anzupassen.
+\item Zusätzlich müssen dem lokalen Planer die Rückwärtsbewegungen hinzugefügt werden, sodass Trajektorien gemäß dem globalen Planer (SBPL) funktionieren. TODO
+\end{itemize}
+\end{figure}
 \subsection{Globale und lokale Costmap}
+Die lokale und globale Costmap werden mithilfe eines Mapservers bereitgestellt.
+Verfahren wie SLAM sind in der frühen Entwicklungsphase noch nicht implementiert, da es vorrangig um die Fähigkeit geht, die Move\_Base verwenden zu können.
 %\subsection{Globale Costmap}
 %?
 %\subsection{Lokale Costmap}
 %?
 \subsection{Recovery Behaviours}
-Recovery Behaviours sind abgestellt TODO
+Recovery Behaviours werden wegen der frühen Entwicklungsphase nicht verwendet, sind aber ggf. eine Option um das Verhalten des Roboters weiter zu verbessern.
 %Anpassung, da auch hier kein Drehen auf der Stelle möglich ist.
 
 %\subsubsection{•}
@@ -316,8 +340,7 @@ Recovery Behaviours sind abgestellt TODO
 %\section{} \section{Eigene Arbeit} 
 %\section{Evaluation} 
 %\section{Zusammenfassung/Ausblick}
-\clearpage
-\newpage
+%\newpage
 
 %Figure benötigt weil wrapfigure sonst 
 \begin{figure}
