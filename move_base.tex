@@ -58,7 +58,7 @@ Die Recovery Behaviours, die dazu dienen ein Verhalten für Probleme mit dem gep
 
 Nachfolgend werden die einzelnen Komponenten beschrieben.
 
-\subsection{Globaler Planer}
+\subsection{Globaler Planer} \label{globalPlanner}
 %A-Stern, navfn, carrot-planner, SBPL
 Der globale Planer erhält unter dem ROS-Topic \textit{move\_base\_simple/goal} eine Message vom Typ \textit{geometry\_msgs/PoseStamped}, die unter Berücksichtigung der globalen Costmap beispielsweise mithilfe von A* berechnet, welcher Pfad durch die einzelnen Knotenpunkte in der Karte zum Ziel führen.\\
 Hierbei wird seitens der ROS-Wiki als grundliegende Implementationen \textit{navfn} und der \textit{carrot\_planner} aufgeführt:
@@ -108,15 +108,15 @@ Das costmap\_2d Paket \cite{costmap2d} bietet eine konfigurierbare Struktur in F
 Seit Hydro sind die Methoden zur costmap-Konfiguration frei konfigurierbar. Jede Funktionalität ist in einer Ebene abgelegt. So ist beispielweise die statische Karte eine Ebene und die Hindernisse sind eine andere. Standardmäßig sind die Hindernisse in der entsprechenden Ebene in 3D abgelegt. Dieses ermöglicht einen effizienteren Umgang mit ihnen beim markieren und freigeben des Raumes.\\
 Die Hauptschnittstelle ist costmap\_2d::Costmap2DROS, die viele ROS Funktionalitäten enthält. Sie enthält costmap\_2d::LayeredCostmap welches es ermöglicht die einzelnen Ebenen im Auge zu behalten. Jede Ebene ist in der LayeredCostmap enthalten, jedoch kann jede Ebene einzeln implemeniert werden. Die Funktionalität wird über die costmap\_2d::Costmap2D Klasse zur Verfügung gestellt.
 \subsection{Markieren und Löschen}
-Die Costmap aktualisiert sich ständig mit Hilfe von Sensortopics über ROS. Jeder Sensor benutzt entweder "mark" (fügt Hindernis-Informationen zur costmap  hinzu), "clear" (entfernt Hindernis-Informationen aus der costmap) oder beides. Zum Markieren wird in das Array in die entsprechende Zelle die Kosten eingetragen. Ein Löschvorgang besteht jedoch aus Raytracing durch ein Gitter von dem Ursprung des Sensors nach außen für jede Beobachtung berichtet. Wenn eine dreidimensionale Struktur verwendet wird, werden Hindernisinformationen aus jeder Ebene in zwei Dimensionen umgerechnet, wenn diese in die costmap eingetragen werden:\\
+Die Costmap aktualisiert sich ständig mit Hilfe von Sensortopics über ROS. Jeder Sensor benutzt entweder \textit{mark} (fügt Hindernis-Informationen zur costmap  hinzu), \textit{clear} (entfernt Hindernis-Informationen aus der costmap) oder beides. Zum Markieren wird in das Array in die entsprechende Zelle die Kosten eingetragen. Ein Löschvorgang besteht jedoch aus Raytracing durch ein Gitter von dem Ursprung des Sensors nach außen für jede Beobachtung. Wenn eine dreidimensionale Struktur verwendet wird, werden Hindernisinformationen aus jeder Ebene in zwei Dimensionen umgerechnet, wenn diese in die costmap eingetragen werden:\\
 \subsection{Occupied, Free, und Unknown Space}
 Während jede Zelle in der costmap Werte von 0 bis 255 haben kann, hat die zugrunde liegende Struktur nur drei unterschiedliche Werte. Jede Zelle kann entweder als frei, benutzt oder unbekannt markiert werden. Jeder Status hat einen bestimmten Wert. Die Werte für occupied Zellen sind hinterlegt in costmap\_2d::LETHAL\_OBSTACLE, die Kosten für unknown Zellen sind hinterlegt in costmap\_2d::NO\_INFORMATION und die Zellen für free Space sind hinterlegt in costmap\_2d::FREE\_SPACE.
 \subsection{Map Updates}
-Die costmap wird in Zyklen mit einer Frequenz, definiert in update\_frequency, aktualisiert. Jeder Zyklus, Sensordaten kommt, Kennzeichnung und Clearing -Operationen werden in der darunterliegenden Struktur des Belegungs costmap perfomed, und diese Struktur wird in die costmap, wo die entsprechenden Kostenwerte wie oben beschrieben zugeordnet sind, projiziert. Danach wird auf jedes Hindernis mit seinen Zellen eine Operation durchgeführt, die sich Inflation nennt und mit Kosten belegt die in costmap\_2d::LETHAL\_OBSTACLE wiederzufinden sind. Diese besteht aus Vermehrungskostenwerte nach außen von jeder besetzten Zelle aus einem Benutzer - spezifizierten Reifenradius. Die Details dieser Inflation Verfahrens werden nachstehend beschrieben.
+Die costmap wird in Zyklen mit einer Frequenz, definiert in \textit{update\_frequency}, aktualisiert. Jeder Zyklus, Sensordaten kommt, Kennzeichnung und Clearing -Operationen werden in der darunterliegenden Struktur der Belegungs-costmap perfomed, und diese Struktur wird in die costmap, wo die entsprechenden Kostenwerte wie oben beschrieben zugeordnet sind, projiziert. Danach wird auf jedes Hindernis mit seinen Zellen eine Operation durchgeführt, die sich Inflation nennt und mit Kosten belegt die in costmap\_2d::LETHAL\_OBSTACLE wiederzufinden sind. Diese besteht aus Vermehrungskostenwerte nach außen von jeder besetzten Zelle aus einem Benutzer - spezifizierten Reifenradius. Die Details dieser Inflation Verfahrens werden nachstehend beschrieben.
 %\subsection{Lokale Costmap}
 
 \section{Action API}
-Die move\_base Knoten stellt eine Implementierung des SimpleActionServer (siehe actionlib Dokumentation) zur Verfüpgung der die Ziele der geometry\_msgs/PoseStamped Nachrichten enthält. Die Kommunikation mit den move\_base Knoten ist direkt über ROS möglich. Es wird aber empfohlen die Ziele über den SimpleActionClient zu schicken, sofern eine Nachverfolgung des Status gewünscht wird.
+Die move\_base Knoten stellt eine Implementierung des SimpleActionServer (siehe actionlib Dokumentation) zur Verfügung der die Ziele der \textit{geometry\_msgs/PoseStamped} Nachrichten enthält. Die Kommunikation mit den move\_base Knoten ist direkt über ROS möglich. Es wird aber empfohlen die Ziele über den SimpleActionClient zu schicken, sofern eine Nachverfolgung des Status gewünscht wird.
 %\subsection{Action Subscribed Topics}
 \subsubsection{move\_base/goal} (move\_base\_msgs/MoveBaseActionGoal)\\
 	Ein Ziel das move\_base in der Welt verfolgen soll.
@@ -148,43 +148,43 @@ Die move\_base Knoten stellt eine Implementierung des SimpleActionServer (siehe 
 \section{Parameter}
 Nachfolgend werden Parameter an die Move\_Base aufgelistet, die entweder beim Starten der Move\_Base beispeilsweise in einem Launch-File oder über den ROS-Parameterserver gesetzt werden.
 \subsubsection{base\_global\_planner} (string, default: "navfn/NavfnROS")\\
-   Name des Plugins das als Globaler Planer mit move\_base benutzt wird. VGL. Abschnitt "Komponenten / Globaler Planer".
+   Name des Plugins das als Globaler Planer mit move\_base benutzt wird. VGL. Abschnitt "Komponenten / Globaler Planer": \ref{globalPlanner}
 
 \subsubsection{base\_local\_planner} (string, default: "base\_local\_planner/TrajectoryPlannerROS" For 1.1+ series)\\
-   VGL. Abschnitt "Komponenten / Lokaler Planer".
+   VGL. Abschnitt "Komponenten / Lokaler Planer": \ref{localPlanner}
    
    
 \subsubsection{recovery\_behaviors} (list, default: [{name: conservative\_reset, type: clear\_costmap\_recovery/ClearCostmapRecovery}, {name: rotate\_recovery, type: rotate\_recovery/RotateRecovery}, {name: aggressive\_reset, type: clear\_costmap\_recovery/ClearCostmapRecovery}])\\
-   VGL. Abschnitt "Komponenten / Recovery Behaviours".
+   VGL. Abschnitt "Komponenten / Recovery Behaviours": \ref{recoveryBehaviours}
    
 \subsubsection{controller\_frequency} (double, default: 20.0)\\
 	Die Rate in Hz in der die Fahrbefehle an den Basiskonten gesendet werden.
 	
 \subsubsection{planner\_patience} (double, default: 5.0)\\
-	Wert wie lange in Sekunden der Planer versucht einen Plan zu finden bis spaceclearing Operationen eingeleitet werden (siehe Recovery Behaviours).
+	Wert wie lange in Sekunden der Planer versucht einen Plan zu finden bis spaceclearing Operationen eingeleitet werden (siehe \textbf{Recovery Behaviours} \ref{recoveryBehaviours}).
 	
 \subsubsection{controller\_patience} (double, default: 15.0)\\
 	Wert wie lange in Sekunden der Kontroller auf richtige Komandos wartet bis spaceclearing Operationen eingeleitet werden.
 	
 \subsubsection{conservative\_reset\_dist} (double, default: 3.0)\\
-	Abstand von Hindernissen in Meteren zum Roboter die aus der costmap entfernt 	werden wenn versucht wird Platz in der costmap zu schaffen.
+	Abstand von Hindernissen in Metern zum Roboter die aus der costmap entfernt	werden wenn versucht wird Platz in der costmap zu schaffen.
 	
 \subsubsection{recovery\_behavior\_enabled} (bool, default: true)\\
 	Ein und ausschalten der move\_base recovery behaviors.
 
 \subsubsection{clearing\_rotation\_allowed} (bool, default: true)\\
-	Erlaubt oder Verbietet Rotationen um die eigene Achse beim Versuch von clear out 	space
-	Hinweis: Diese Parameter wird nur beim Standard recovery behaviors benutzt
+	Erlaubt oder verbietet Rotationen um die eigene Achse beim Versuch von clear out space
+	Hinweis: Diese Parameter wird nur beim Standard recovery behaviors benutzt.
 
 \subsubsection{shutdown\_costmaps} (bool, default: false)\\
-	Eingabe Paramter ist ein Boolean. Gibt an ob die costmap ausgeschaltet wird wenn 	die move\_base auf inaktiv gesetzt ist
+	Gibt an ob die costmap ausgeschaltet wird wenn die move\_base auf inaktiv gesetzt ist.
 \subsubsection{oscillation\_timeout} (double, default: 0.0)\\
 	Wert in Sekunden bis das recovery behaviour ausgelöst wird.
 \subsubsection{oscillation\_distance} (double, default: 0.5)\\
-	Strecke in Metern die der Roboter zurücklegen muss um sicher zu sein nicht zu 	schwingen. Setzt den Timer oscillation\_timeout zurück.
+	Strecke in Metern die der Roboter zurücklegen muss um sicher zu sein nicht zu schwingen. Setzt den Timer oscillation\_timeout zurück.
 \subsubsection{planner\_frequency} (double, default: 0.0)\\
-	Frequenz in Hertz in der die Globale Planber Schleife ausgeführt wird.
-	0.0 führt den Globalen Planer nur bei einem neuen Ziel aus oder der lokale Planer eine unmögliche Route meldet.	
+	Frequenz in Hertz in der die Globale Planer Schleife ausgeführt wird.
+	0.0 führt den Globalen Planer nur bei einem neuen Ziel aus oder wenn der lokale Planer eine unmögliche Route meldet.	
 \newpage
 \section{Beispielhafte Implementierung an einem Rover}
 Nachfolgend wird ein Beispiel mithilfe der vom Maskor-Institut der Fachhochschule Aachen gestellten Rover aufgeführt, mit dem die Verwendung der \textit{move\_base} möglich ist, in dem man für den globalen und lokalen Planer andere Pakete nimmt, die sich eher für Roboter mit einer Lenkung wie der eines Kraftfahrzeugs (Ackermann) eignen.\\
@@ -237,8 +237,8 @@ SBPL bietet auch die Möglichkeit die Bewegung eines Roboterarmes zu planen bzw.
 	\cite{SBPLRosSchool}
   \end{center}
 \end{wrapfigure}
-\textbf{Pfaderstellung} SBPL verknüpft Motion Primitives, legt mit den verknüpften Motion Primitives einen Graph über die Umwelt und streicht, wie im Bild gezeigt, Knoten, die in einem Hindernis liegen oder eine Kollision auslösen würden bzw. (laut costmap) für den Roboter unerreichbar sind.\\
-Im Anschluss daran kann innerhalb von SBPL eine Graphensuche über die verschiedenen aneinander verknüpften Motion Primitives geführt werden, die einen gültigen Pfad liefert und der die Bewegungsmöglichkeiten des Roboters berücksichtigt.\\
+\textbf{Pfaderstellung} SBPL verknüpft Motion Primitives, legt mit den verknüpften Motion Primitives einen Graph über die Umwelt und streicht, wie im Bild gezeigt, Knoten, die in einem Hindernis liegen oder eine Kollision auslösen würden bzw. (laut costmap, Abschnitt \ref{costmap}) für den Roboter unerreichbar sind.\\
+Im Anschluss daran kann innerhalb von SBPL eine Graphensuche über die verschiedenen aneinander geknüpften Motion Primitives geführt werden, die einen gültigen Pfad liefert (solange dieser existiert) und der die Bewegungsmöglichkeiten des Roboters berücksichtigt.\\
 Dabei können theoretisch Schleifen entstehen. Es wird aber später im Bereich der Algorithmen zur Graphensuche gezeigt, warum diese keine Schwierigkeit darstellen.
 Die in SBPL implementierten Algorithmen für diese Graphensuche sind wie folgt:\\
 \end{figure}
@@ -296,22 +296,9 @@ $f(s) = g(s) + \epsilon h(s), \epsilon \geq 1$.
 $\forall s: h(s) \le c*(s,s_{goal})$ wobei $c$ die minimalen Kosten von $s$ zu $s_{goal}$ sind.
 \end{itemize}
 \end{figure}
-\section{Anytime D*}
-Neben der TODO
-%\begin{math}
+\subsubsection{Anytime D*}
+Neben der Implementierung des Anytime Repairing A* bietet SBPL zur Graphensuche alternativ eine inkrementelle Variante des A* Algorithmus, dem D*, die hier allerdings nicht weiter erläutert wird, da sie nicht in dem Beispiel verwendet wird.
 
-%\end{math}
-%\end{figure}
-%\newpage
-
-
-%\begin{wrapfigure}{r}{0.5\textwidth}
-%	\centering
-%  \includegraphics[width=0.5\textwidth]{motionPrimitive.png}
-%	\caption{Motion Primitive}
-%	\cite{SBPLRosSchool}
-%	\label{fig2}
-%\end{wrapfigure}
 \subsection{Lokaler Planer}
 %Eigener lokaler Planer (Umbau von TrajectoryPlanner)
 Der lokale Planer ergibt sich im wesentlichen aus dem bereits in Punkt \ref{localPlanner} beschriebenen.\\
