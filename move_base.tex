@@ -21,7 +21,8 @@
 
 
 \begin{abstract} Dieser Bericht stellt eine Zusammenfassung der verschiedenen Komponenten des in ROS implementierten Move\_Base-Pakets dar.\\
-Das ROS-Package move\_base stellt  die Möglichkeit dar mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, auf dem der Navigation Stack\cite{navigation} in ROS vollständig implementiert ist, da die Move\_Base lediglich eine Schnittstelle für den Benutzer darstellt, damit der Nutzer einen Navigationsbefehl absetzen (beispielsweise über das Tool \textit{RViz}) kann und dieser Befehl von der Base unter Berücksichtigung von Kollisionsvermeidung ausgeführt wird.\end{abstract}
+Das ROS-Package move\_base bietet die Möglichkeit mit gegebener Karte und Anfangsposition ein örtliches Ziel mit einem Roboter zu erreichen, auf dem der Navigation Stack\cite{navigation} in ROS vollständig implementiert ist, da die Move\_Base lediglich eine Schnittstelle für den Benutzer darstellt.\\
+Diese Schnittstelle bietet für den Nutzer die Funktionalität einen Navigationsbefehl absetzen (beispielsweise über das Tool \textit{RViz}) und diesen Befehl von der Base unter Berücksichtigung von Kollisionsvermeidung ausführen zu können.\end{abstract}
 %\newpage
 
 \section{Einleitung}
@@ -83,7 +84,7 @@ Dieses Paket beinhaltet zwei verschiedene Implementierungen zur Ausführung eine
 Der konkrete Unterschied zwischen dem \textit{Trajectory Rollout} und dem \textit{Dynamic Window Approach (DWA)} besteht in der Erstellung der Bewegungsmuster.\\
 \textit{Trajectory Rollout} probiert verschiedene mögliche Geschwindigkeiten über die gesamte gegebene Simulationszeit in Abhängigkeit von den für den Roboter möglichen Beschleunigungen.\\
 \textit{DWA} probiert die verschiedenen Geschwindigkeiten für nur einen Simulationsschritt (auch in Abhängigkeit von den Beschleunigungen).\\
-\textit{DWA} wird laut ROS-Wiki aufgrund seiner höheren Effizienz (es probiert innerhalb von kleineren möglichen Bewegungsmuster als \textit{Trajectory Rollout}) \cite{baseLocalPlanner}
+\textit{DWA} wird laut ROS-Wiki aufgrund seiner höheren Effizienz verwendet (es probiert innerhalb von kleineren möglichen Bewegungsmuster als \textit{Trajectory Rollout}) \cite{baseLocalPlanner}
 Zum \textit{DWA} gibt es zusätzlich eine separate Implementierung in ROS:\\ \textbf{http://wiki.ros.org/dwa\_local\_planner}.
 \subsection{Recovery Behaviours} \label{recoveryBehaviours}
 Die Recovery Behaviours sind ein optionales Feature der Move\_Base und eignen sich für einen Umstand, in dem der Roboter zwar durch den globalen Planer einen gültigen Plan erhalten hat, aber diesen, beispielsweise aufgrund der Dynamik in der Umwelt, nicht länger verfolgen kann und deswegen einen neuen Pfad berechnen muss.\\
@@ -96,46 +97,62 @@ Die Recovery Behaviours sind ein optionales Feature der Move\_Base und eignen si
 \end{figure}
 
 Dabei wird folgendes Schema verwendet:\cite{recoveryBehaviours}
-\begin{enumerate}
-\item [Navigating] Solange die Navigation ohne Probleme weiter läuft (globaler Pfad ist verfolgbar), fahre mit der Navigation fort.
-\item [Conservative Reset] Wenn der Roboter feststeckt werden zu Beginn alle Objekte ausserhalb eines vom Benutzer festgelegten Bereichs entfernt. Danach wird nach Möglichkeit eine Rotation auf der Stelle durchgeführt, die den Raum innerhalb der costmaps zu klären, damit ein neuer Pfad gefunden werden kann.
-\item [Aggresive Reset] Wenn das Conservative Reset nicht geholfen hat, wird beim Aggressive Reset die costmap innerhalb eines festgelegten Bereichs vollständig zurückgesetzt und anschließend eine erneute Clearing Rotation durchgeführt.
-\item [Aborted] Wenn auch der vorige Schritt fehlschlägt wird davon ausgegangen dass aus der aktuellen Situation kein Ausweg besteht und die Navigationsaufgabe wird abgebrochen.
-\end{enumerate}
+%\begin{enumerate}
+\subsubsection{Navigating} Solange die Navigation ohne Probleme weiter läuft (globaler Pfad ist verfolgbar), fahre mit der Navigation fort.
+\subsubsection{Conservative Reset} Wenn der Roboter feststeckt werden zu Beginn alle Objekte ausserhalb eines vom Benutzer festgelegten Bereichs entfernt. Danach wird nach Möglichkeit eine Rotation auf der Stelle durchgeführt, um den Raum innerhalb der costmaps zu klären, damit ein neuer Pfad gefunden werden kann.
+\subsubsection{Aggresive Reset} Wenn das Conservative Reset nicht geholfen hat, wird beim Aggressive Reset die costmap innerhalb eines festgelegten Bereichs vollständig zurückgesetzt und anschließend eine erneute Clearing Rotation durchgeführt.
+\subsubsection{Aborted} Wenn auch der vorige Schritt fehlschlägt wird davon ausgegangen dass aus der aktuellen Situation kein Ausweg besteht und die Navigationsaufgabe wird abgebrochen.
+%\end{enumerate}
 
 \section{Costmap} \label{costmap}
-Das costmap\_2d Paket \cite{costmap2d} bietet eine konfigurierbare Struktur in Form eines \textit{occupancy grids}. Costmap benutzt Sensorinformationen und Informationen von der statische Karte um neue Objekte in Form eines costmap\_2d::Costmap2DROS Objektes zur Verfügung zu stellen. Dieses Objekt bietet eine rein zweidimensionale Schnittstelle. Das bedeutet, dass Objekte nur zweidimensional dargestellt werden können. Dieses dient der vereinfachten Planung in der Ebene.\\
-Seit Hydro sind die Methoden zur costmap-Konfiguration frei konfigurierbar. Jede Funktionalität ist in einer Ebene abgelegt. So ist beispielweise die statische Karte eine Ebene und die Hindernisse sind eine andere. Standardmäßig sind die Hindernisse in der entsprechenden Ebene in 3D abgelegt. Dieses ermöglicht einen effizienteren Umgang mit ihnen beim markieren und freigeben des Raumes.\\
+Das costmap\_2d Paket \cite{costmap2d} bietet eine konfigurierbare Struktur in Form eines \textit{occupancy grids}. Costmap benutzt Sensorinformationen und Informationen von der statische Karte um neue Objekte in Form eines costmap\_2d::Costmap2DROS Objektes zur Verfügung zu stellen. Dieses Objekt bietet eine rein zweidimensionale Schnittstelle. Das bedeutet, dass Objekte nur zweidimensional dargestellt werden können. Dies dient der vereinfachten Planung in der Ebene.\\
+Seit der ROS-Version Hydro sind die Methoden zur costmap-Konfiguration frei konfigurierbar. Jede Funktionalität ist in einer Ebene abgelegt. So ist beispielweise die statische Karte eine Ebene und die Hindernisse sind eine andere. Standardmäßig sind die Hindernisse in der entsprechenden Ebene in 3D abgelegt. Dieses ermöglicht einen effizienteren Umgang mit ihnen beim markieren und freigeben des Raumes.\\
 Die Hauptschnittstelle ist costmap\_2d::Costmap2DROS, die viele ROS Funktionalitäten enthält. Sie enthält costmap\_2d::LayeredCostmap welches es ermöglicht die einzelnen Ebenen im Auge zu behalten. Jede Ebene ist in der LayeredCostmap enthalten, jedoch kann jede Ebene einzeln implemeniert werden. Die Funktionalität wird über die costmap\_2d::Costmap2D Klasse zur Verfügung gestellt.
 \subsection{Markieren und Löschen}
-Die Costmap aktualisiert sich ständig mit Hilfe von Sensortopics über ROS. Jeder Sensor benutzt entweder \textit{mark} (fügt Hindernis-Informationen zur costmap  hinzu), \textit{clear} (entfernt Hindernis-Informationen aus der costmap) oder beides. Zum Markieren wird in das Array in die entsprechende Zelle die Kosten eingetragen. Ein Löschvorgang besteht jedoch aus Raytracing durch ein Gitter von dem Ursprung des Sensors nach außen für jede Beobachtung. Wenn eine dreidimensionale Struktur verwendet wird, werden Hindernisinformationen aus jeder Ebene in zwei Dimensionen umgerechnet, wenn diese in die costmap eingetragen werden:\\
+Die Costmap aktualisiert sich ständig mit Hilfe von Sensortopics über ROS. Jeder Sensor benutzt entweder \textit{mark} (fügt Hindernis-Informationen zur costmap  hinzu), \textit{clear} (entfernt Hindernis-Informationen aus der costmap) oder beides. Zum Markieren wird in das Array in die entsprechende Zelle die Kosten eingetragen. Ein Löschvorgang besteht jedoch in jeder einzelnen Beobachtung aus Raytracing durch ein Gitter von dem Ursprung des Sensors nach außen. Wenn eine dreidimensionale Struktur verwendet wird, werden Hindernisinformationen aus jeder Ebene in zwei Dimensionen umgerechnet, wenn diese in die costmap eingetragen werden.\\
 \subsection{Occupied, Free, und Unknown Space}
 Während jede Zelle in der costmap Werte von 0 bis 255 haben kann, hat die zugrunde liegende Struktur nur drei unterschiedliche Werte. Jede Zelle kann entweder als frei, benutzt oder unbekannt markiert werden. Jeder Status hat einen bestimmten Wert. Die Werte für occupied Zellen sind hinterlegt in costmap\_2d::LETHAL\_OBSTACLE, die Kosten für unknown Zellen sind hinterlegt in costmap\_2d::NO\_INFORMATION und die Zellen für free Space sind hinterlegt in costmap\_2d::FREE\_SPACE.
 \subsection{Map Updates}
-Die costmap wird in Zyklen mit einer Frequenz, definiert in \textit{update\_frequency}, aktualisiert. Jeder Zyklus, Sensordaten kommt, Kennzeichnung und Clearing -Operationen werden in der darunterliegenden Struktur der Belegungs-costmap perfomed, und diese Struktur wird in die costmap, wo die entsprechenden Kostenwerte wie oben beschrieben zugeordnet sind, projiziert. Danach wird auf jedes Hindernis mit seinen Zellen eine Operation durchgeführt, die sich Inflation nennt und mit Kosten belegt die in costmap\_2d::LETHAL\_OBSTACLE wiederzufinden sind. Diese besteht aus Vermehrungskostenwerte nach außen von jeder besetzten Zelle aus einem Benutzer - spezifizierten Reifenradius. Die Details dieser Inflation Verfahrens werden nachstehend beschrieben.
+Die costmap wird in Zyklen mit einer Frequenz, definiert in \textit{update\_frequency}, aktualisiert. In jedem Zyklus gibt es neue Sensordaten, die ein erneutes Markieren und Löschen in der darunterliegenden Struktur der Belegungs-costmap erfordern. Diese Struktur wird in die costmap, wo die entsprechenden Kostenwerte wie oben beschrieben zugeordnet sind, projiziert. Danach wird auf jedes Hindernis mit seinen Zellen eine Operation durchgeführt, die sich Inflation nennt und mit Kosten belegt die in costmap\_2d::LETHAL\_OBSTACLE wiederzufinden sind. Diese besteht aus Vermehrungskostenwerte nach außen von jeder besetzten Zelle aus einem Benutzer - spezifizierten Reifenradius. Die Details dieser Inflation Verfahrens werden nachstehend beschrieben.
 %\subsection{Lokale Costmap}
 
+\subsection{tf}
+Um Daten aus Sensorquellen in das costmap einzufügen, benutzt das \\costmap\_2d::Costmap2DROS Objekt tf. Genauer gesagt, wird davon ausgegangen, dass alle Transformationen zwischen den vom global\_frame Parameter, dem robot\_base\_frame Parameter und Sensorsignale auf dem neuesten Stand sind. Der Parameter transform\_tolerance legt die maximale Latenz zwischen diesen Transformationen fest. Wenn der tf Baum nicht mit der erwarteten Rate aktualisiert wird, dann wird der Navigation Stack des Roboters gestoppt.
+
+\subsection{Inflation}
+Die Inflation ist der Prozess der Verbreitung Kostenwerte aus besetzten Zellen verringert um den Abstand. Zu diesem Zweck definieren wir 5 spezifische Symbole für costmap Werte.
+\subsubsection{Lethal} Kosten bedeutet, dass es ein tatsächliche Hindernis in einer Zelle gibt.  Würde sich das Zemtrum des Roborts dort befinden, gäbe es eine Kollision.
+\subsubsection{Inscribed} Kosten bedeutet, dass eine Zelle weniger als der Roboterradius entfernt ist.
+\subsubsection{Possibly circumscribed} Kosten sind ähnlich den \textbf{inscribed} Kosten, nur das hier die Roboterkonturen zu Grunde gelegt werden. 
+\subsubsection{Freespace} Kosten werden als Null angenommen. Eine freie Roboterbewegung ist möglich.
+\subsubsection{Unknown} Kosten bedeutet, dass keine Informationen zu einer bestimmten Zelle gibt. Der Benutzer des costmap kann dies interpretieren, wie er will.
+\\\\Alle anderen Kosten liegen zwischen \textbf{Freespace} und \textbf{Possibly circumscribed} abhängig von der Entfernung zur \textbf{lethal} Zelle und der zugrundeliegenden benutzerdefinierten Funktion.
+
+\subsection{Map Types}
+Es gibt zwei Möglichkeiten, um ein costmap\_2d::Costmap2DROS Objekt zu initialisieren:
+\\\\Die erste ist die Nutzung einer benutzergenerierten statischen Karte. In diesem Fall wird die costmap so initialisiert, dass die Breite, Höhe und Hindernisinformationen mit der statischen Karte übereinstimmen. Diese Konfiguration wird normalerweise in Verbindung mit einem Lokalisierungssystem verwendet.\\\\
+Die zweite Möglichkeit eine costmap\_2d::Costmap2DROS Objekt zu initialisieren ist die Breite und Höhe zu definieren und den rolling\_window Parameter auf \textit{true} zu setzten. Der rolling\_window Parameter halten den Roboter in der Mitte der costmap wenn diese sich durch die Welt bewegt.
 \section{Action API}
-Die move\_base Knoten stellt eine Implementierung des SimpleActionServer (siehe actionlib Dokumentation) zur Verfügung der die Ziele der \textit{geometry\_msgs/PoseStamped} Nachrichten enthält. Die Kommunikation mit den move\_base Knoten ist direkt über ROS möglich. Es wird aber empfohlen die Ziele über den SimpleActionClient zu schicken, sofern eine Nachverfolgung des Status gewünscht wird.
+Der move\_base Knoten stellt eine Implementierung des SimpleActionServer (siehe actionlib Dokumentation) zur Verfügung der die Ziele der \textit{geometry\_msgs/PoseStamped} Nachrichten enthält. Die Kommunikation mit den move\_base Knoten ist direkt über ROS möglich. Es wird aber empfohlen die Ziele über den SimpleActionClient zu schicken, sofern eine Nachverfolgung des Status gewünscht wird.
 %\subsection{Action Subscribed Topics}
 \subsubsection{move\_base/goal} (move\_base\_msgs/MoveBaseActionGoal)\\
 	Ein Ziel das move\_base in der Welt verfolgen soll.
 \subsubsection{move\_base/cancel} (actionlib\_msgs/GoalID)\\
-	Anfrage um ein bestimmtes Ziel nicht mehr zu verfolgen.
+	Anfrage um die verfolgung eines Ziels abzubrechen.
 \subsection{Action Published Topics}
 \subsubsection{move\_base/feedback} (move\_base\_msgs/MoveBaseActionFeedback)\\
 	Enthält die aktuelle Position der Basis in der Welt
 \subsubsection{move\_base/status} (actionlib\_msgs/GoalStatusArray)\\
-	Enthät Statusinformationen der Ziele die an move\_base geschickt werden.
+	Enthält Statusinformationen der Ziele die an move\_base geschickt werden.
 \subsubsection{move\_base/result} (move\_base\_msgs/MoveBaseActionResult)\\
 	Rückgabewert ist leer für move\_base action.
 \section{Topics}
 \subsection{Subscribed Topics}
 \subsubsection{move\_base\_simple/goal} (geometry\_msgs/PoseStamped)\\
-	Bietet ein non-action interface für move\_base für Benutrzer bei dennen die Nachverfolgung der Aktionen nicht relevant ist.
+	Bietet ein non-action interface für move\_base für Benutrzer bei denen die Nachverfolgung der Aktionen nicht relevant ist.
 \subsection{Published Topics}
 \subsubsection{cmd\_vel} (geometry\_msgs/Twist)\\
-	Forlaufende Bewegungsbefejle die durch eine mobile base ausgeführt werden 	sollen.
+	Fortlaufende Bewegungsbefele die durch eine mobile Base ausgeführt werden sollen.
 	
 \section{Services}
 \subsubsection{make\_plan} (nav\_msgs/GetPlan)\\
@@ -152,8 +169,7 @@ Nachfolgend werden Parameter an die Move\_Base aufgelistet, die entweder beim St
 
 \subsubsection{base\_local\_planner} (string, default: "base\_local\_planner/TrajectoryPlannerROS" For 1.1+ series)\\
    VGL. Abschnitt "Komponenten / Lokaler Planer": \ref{localPlanner}
-   
-   
+
 \subsubsection{recovery\_behaviors} (list, default: [{name: conservative\_reset, type: clear\_costmap\_recovery/ClearCostmapRecovery}, {name: rotate\_recovery, type: rotate\_recovery/RotateRecovery}, {name: aggressive\_reset, type: clear\_costmap\_recovery/ClearCostmapRecovery}])\\
    VGL. Abschnitt "Komponenten / Recovery Behaviours": \ref{recoveryBehaviours}
    
@@ -187,7 +203,7 @@ Nachfolgend werden Parameter an die Move\_Base aufgelistet, die entweder beim St
 	0.0 führt den Globalen Planer nur bei einem neuen Ziel aus oder wenn der lokale Planer eine unmögliche Route meldet.	
 \newpage
 \section{Beispielhafte Implementierung an einem Rover}
-Nachfolgend wird ein Beispiel mithilfe der vom Maskor-Institut der Fachhochschule Aachen gestellten Rover aufgeführt, mit dem die Verwendung der \textit{move\_base} möglich ist, in dem man für den globalen und lokalen Planer andere Pakete nimmt, die sich eher für Roboter mit einer Lenkung wie der eines Kraftfahrzeugs (Ackermann) eignen.\\
+Nachfolgend wird ein Beispiel mithilfe der vom Maskor-Institut der Fachhochschule Aachen gestellten Rover aufgeführt, mit dem die Verwendung der \textit{move\_base} möglich ist. Dazu nimmt man für den globalen und lokalen Planer andere Pakete, die sich eher für Roboter mit einer Lenkung wie der eines Kraftfahrzeugs (Ackermann) eignen.\\
 \subsection{Problem: Ackermann im Vergleich zu (nicht-) holonomen Robotern}
 Ein Roboter, der ein Ackermann-Fahrgestell besitzt unterscheidet sich von anderen mobilen Robotern grundliegend darin dass er sich einerseits nicht auf der Stelle drehen kann und sich auch nicht seitlich bewegen kann.\\
 Die oben genannten Implementationen der globalen und lokalen Planer gehen aber davon aus dass der Roboter sich zumindest auf der Stelle drehen kann.\\

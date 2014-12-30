@@ -47,7 +47,7 @@ CarrotPlanner, ``http://wiki.ros.org/carrot\_planner''
 base\_local\_planner, ``http://wiki.ros.org/base\_local\_planner''
 
 \bibitem{costmap2d}
-costmap2d, ``http://wiki.ros.org/costmap\_2d''
+costmap\_2d, ``http://wiki.ros.org/costmap\_2d''
 
 \bibitem{ackermannGroup}
 Ackermann Group, ``http://wiki.ros.org/Ackermann%20Group''
@@ -62,6 +62,6 @@ SBPL Lattice Planner, ``http://wiki.ros.org/sbpl\_lattice\_planner''
 SBPL ROS School,\\``http://www.ros.org/wiki/Events/CoTeSys-ROS-School?\\action=AttachFile\&do=get\&target=robschooltutorial\_oct10.pdf''
 
 \bibitem{likhachev}
-Dr. Maxim Likhachev, ``http://www.cs.cmu.edu/~maxim/''
+Dr. Maxim Likhachev, ``http://www.cs.cmu.edu/\textasciitilde maxim/''
 
 \end{thebibliography}
